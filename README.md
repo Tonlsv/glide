@@ -1,474 +1,436 @@
-# Glide: Vendor Package Management for Golang
-
-![glide logo](https://glide.sh/assets/logo-small.png)
-
-Are you used to tools such as Cargo, npm, Composer, Nuget, Pip, Maven, Bundler,
-or other modern package managers? If so, Glide is the comparable Go tool.
-
-*Manage your vendor and vendored packages with ease.* Glide is a tool for
-managing the `vendor` directory within a Go package. This feature, first
-introduced in Go 1.5, allows each package to have a `vendor` directory
-containing dependent packages for the project. These vendor packages can be
-installed by a tool (e.g. glide), similar to `go get` or they can be vendored and
-distributed with the package.
-
-[![Build Status](https://travis-ci.org/Masterminds/glide.svg)](https://travis-ci.org/Masterminds/glide)
-[![Build status](https://ci.appveyor.com/api/projects/status/3pl4ytgdlfj852li?svg=true&passingText=windows%20build%20passing&failingText=windows%20build%20failing)](https://ci.appveyor.com/project/mattfarina/glide-a8xtg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/Masterminds/glide)](https://goreportcard.com/report/github.com/Masterminds/glide) [![GoDoc](https://godoc.org/github.com/Masterminds/glide?status.svg)](https://godoc.org/github.com/Masterminds/glide) [![Documentation Status](https://readthedocs.org/projects/glide/badge/?version=stable)](http://glide.readthedocs.org/en/stable/?badge=stable) [![Documentation Status](https://readthedocs.org/projects/glide/badge/?version=latest)](http://glide.readthedocs.org/en/latest/?badge=latest)
-
-### Go Modules
-
-The Go community is now using Go Modules to handle dependencies. Please consider
-using that instead of Glide. Glide is now mostly unmaintained.
-
-### Features
-
-* Ease dependency management
-* Support **versioning packages** including [Semantic Versioning
-  2.0.0](http://semver.org/) support. Any constraint the [`github.com/Masterminds/semver`](https://github.com/Masterminds/semver)
-  package can parse can be used.
-* Support **aliasing packages** (e.g. for working with github forks)
-* Remove the need for munging import statements
-* Work with all of the `go` tools
-* Support the VCS tools that Go supports:
-    - git
-    - bzr
-    - hg
-    - svn
-* Support custom local and global plugins (see docs/plugins.md)
-* Repository caching and data caching for improved performance.
-* Flatten dependencies resolving version differences and avoiding the inclusion
-  of a package multiple times.
-* Manage and install dependencies on-demand or vendored in your version control
-  system.
-
-## How It Works
-
-Glide scans the source code of your application or library to determine the needed
-dependencies. To determine the versions and locations (such as aliases for forks)
-Glide reads a `glide.yaml` file with the rules. With this information Glide retrieves
-needed dependencies.
-
-When a dependent package is encountered its imports are scanned to determine
-dependencies of dependencies (transitive dependencies). If the dependent project
-contains a `glide.yaml` file that information is used to help determine the
-dependency rules when fetching from a location or version to use. Configuration
-from Godep, GB, GOM, and GPM is also imported.
-
-The dependencies are exported to the `vendor/` directory where the `go` tools
-can find and use them. A `glide.lock` file is generated containing all the
-dependencies, including transitive ones.
-
-The `glide init` command can be use to setup a new project, `glide update`
-regenerates the dependency versions using scanning and rules, and `glide install`
-will install the versions listed in the `glide.lock` file, skipping scanning,
-unless the `glide.lock` file is not found in which case it will perform an update.
-
-A project is structured like this:
-
-```
-- $GOPATH/src/myProject (Your project)
-  |
-  |-- glide.yaml
-  |
-  |-- glide.lock
-  |
-  |-- main.go (Your main go code can live here)
-  |
-  |-- mySubpackage (You can create your own subpackages, too)
-  |    |
-  |    |-- foo.go
-  |
-  |-- vendor
-       |-- github.com
-            |
-            |-- Masterminds
-                  |
-                  |-- ... etc.
-```
-
-*Take a look at [the Glide source code](http://github.com/Masterminds/glide)
-to see this philosophy in action.*
-
-## Install
-
-The easiest way to install the latest release on Mac or Linux is with the following script:
-
-```
-curl https://glide.sh/get | sh
-```
-
-On Mac OS X you can also install the latest release via [Homebrew](https://github.com/Homebrew/homebrew):
-
-```
-$ brew install glide
-```
-
-On Ubuntu Precise (12.04), Trusty (14.04), Wily (15.10) or Xenial (16.04) you can install from our PPA:
-
-```
-sudo add-apt-repository ppa:masterminds/glide && sudo apt-get update
-sudo apt-get install glide
-```
-
-On Ubuntu Zesty (17.04) the package is called `golang-glide`.
-
-[Binary packages](https://github.com/Masterminds/glide/releases) are available for Mac, Linux and Windows.
-
-For a development version it is also possible to `go get github.com/Masterminds/glide`.
-
-To build from source you can:
-
-1. Clone this repository into `$GOPATH/src/github.com/Masterminds/glide` and
-   change directory into it
-2. If you are using Go 1.5 ensure the environment variable GO15VENDOREXPERIMENT is set, for
-   example by running `export GO15VENDOREXPERIMENT=1`. In Go 1.6 it is enabled by default and
-   in Go 1.7 it is always enabled without the ability to turn it off.
-3. Run `make build`
+# Release 0.13.4 (unreleased)
 
-This will leave you with `./glide`, which you can put in your `$PATH` if
-you'd like. (You can also take a look at `make install` to install for
-you.)
+# Release 0.13.3 (2019-07-12)
 
-The Glide repo has now been configured to use glide to
-manage itself, too.
+## Fixed
 
-## Usage
+- #1056: Fixed issue where Glide is not detecting crypto/ed25519, now in the stdlib (thanks @martinkunc)
+- #1033: Fixed segfault with Glide 0.13.2 when stripping Godep workspace (thanks @databus23)
 
-```
-$ glide create                            # Start a new workspace
-$ open glide.yaml                         # and edit away!
-$ glide get github.com/Masterminds/cookoo # Get a package and add to glide.yaml
-$ glide install                           # Install packages and dependencies
-# work, work, work
-$ go build                                # Go tools work normally
-$ glide up                                # Update to newest versions of the package
-```
+# Release 0.13.2 (2018-09-26)
+
+## Fixed
+
+- #956: Fixed Error handling nested vendor folders (thanks @apynes2)
+- #953: Fixed issue where error was not propagating
+
+# Release 0.13.1 (2017-11-07)
+
+## Fixed
 
-Check out the `glide.yaml` in this directory, or examples in the `docs/`
-directory.
+- #935: Fix handling of new core package math/bits (thanks @prateek)
 
-### glide create (aliased to init)
+# Release 0.13.0 (2017-09-28)
 
-Initialize a new workspace. Among other things, this creates a `glide.yaml` file
-while attempting to guess the packages and versions to put in it. For example,
-if your project is using Godep it will use the versions specified there. Glide
-is smart enough to scan your codebase and detect the imports being used whether
-they are specified with another package manager or not.
-
-```
-$ glide create
-[INFO]	Generating a YAML configuration file and guessing the dependencies
-[INFO]	Attempting to import from other package managers (use --skip-import to skip)
-[INFO]	Scanning code to look for dependencies
-[INFO]	--> Found reference to github.com/Masterminds/semver
-[INFO]	--> Found reference to github.com/Masterminds/vcs
-[INFO]	--> Found reference to github.com/codegangsta/cli
-[INFO]	--> Found reference to gopkg.in/yaml.v2
-[INFO]	Writing configuration file (glide.yaml)
-[INFO]	Would you like Glide to help you find ways to improve your glide.yaml configuration?
-[INFO]	If you want to revisit this step you can use the config-wizard command at any time.
-[INFO]	Yes (Y) or No (N)?
-n
-[INFO]	You can now edit the glide.yaml file. Consider:
-[INFO]	--> Using versions and ranges. See https://glide.sh/docs/versions/
-[INFO]	--> Adding additional metadata. See https://glide.sh/docs/glide.yaml/
-[INFO]	--> Running the config-wizard command to improve the versions in your configuration
-```
-
-The `config-wizard`, noted here, can be run here or manually run at a later time.
-This wizard helps you figure out versions and ranges you can use for your
-dependencies.
-
-### glide config-wizard
-
-This runs a wizard that scans your dependencies and retrieves information on them
-to offer up suggestions that you can interactively choose. For example, it can
-discover if a dependency uses semantic versions and help you choose the version
-ranges to use.
-
-### glide get [package name]
-
-You can download one or more packages to your `vendor` directory and have it added to your
-`glide.yaml` file with `glide get`.
-
-```
-$ glide get github.com/Masterminds/cookoo
-```
-
-When `glide get` is used it will introspect the listed package to resolve its
-dependencies including using Godep, GPM, Gom, and GB config files.
-
-### glide update (aliased to up)
-
-Download or update all of the libraries listed in the `glide.yaml` file and put
-them in the `vendor` directory. It will also recursively walk through the
-dependency packages to fetch anything that's needed and read in any configuration.
-
-```
-$ glide up
-```
-
-This will recurse over the packages looking for other projects managed by Glide,
-Godep, gb, gom, and GPM. When one is found those packages will be installed as needed.
-
-A `glide.lock` file will be created or updated with the dependencies pinned to
-specific versions. For example, if in the `glide.yaml` file a version was
-specified as a range (e.g., `^1.2.3`) it will be set to a specific commit id in
-the `glide.lock` file. That allows for reproducible installs (see `glide install`).
-
-To remove any nested `vendor/` directories from fetched packages see the `-v` flag.
-
-### glide install
-
-When you want to install the specific versions from the `glide.lock` file use
-`glide install`.
-
-```
-$ glide install
-```
-
-This will read the `glide.lock` file and install the commit id specific versions
-there.
-
-When the `glide.lock` file doesn't tie to the `glide.yaml` file, such as there
-being a change, it will provide a warning. Running `glide up` will recreate the
-`glide.lock` file when updating the dependency tree.
-
-If no `glide.lock` file is present `glide install` will perform an `update` and
-generate a lock file.
-
-To remove any nested `vendor/` directories from fetched packages see the `-v` flag.
-
-## glide novendor (aliased to nv)
-
-When you run commands like `go test ./...` it will iterate over all the
-subdirectories including the `vendor` directory. When you are testing your
-application you may want to test your application files without running all the
-tests of your dependencies and their dependencies. This is where the `novendor`
-command comes in. It lists all of the directories except `vendor`.
-
-    $ go test $(glide novendor)
-
-This will run `go test` over all directories of your project except the
-`vendor` directory.
-
-##BB-89 9me
-
-When you're scripting with Glide there are occasions where you need to know
-the name of the package you're working on. `glide name` returns the name of the
-package listed in the `glide.yaml` file.
-
-### glide tree
-
-Glide includes a few commands that inspect code and give you details
-about what is imported. `glide tree` is one such command. Running it
-gives data like this:
-
-```
-$ glide tree
-github.com/Masterminds/glide
-	github.com/Masterminds/cookoo   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/cookoo)
-		github.com/Masterminds/cookoo/io   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/cookoo/io)
-	github.com/Masterminds/glide/cmd   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/cmd)
-		github.com/Masterminds/cookoo   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/cookoo)
-			github.com/Masterminds/cookoo/io   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/cookoo/io)
-		github.com/Masterminds/glide/gb   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/gb)
-		github.com/Masterminds/glide/util   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/util)
-			github.com/Masterminds/vcs   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/vcs)
-		github.com/Masterminds/glide/yaml   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/yaml)
-			github.com/Masterminds/glide/util   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/util)
-				github.com/Masterminds/vcs   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/vcs)
-			github.com/Masterminds/vcs   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/vcs)
-			gopkg.in/yaml.v2   (/Users/mfarina/Code/go/src/gopkg.in/yaml.v2)
-		github.com/Masterminds/semver   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/semver)
-		github.com/Masterminds/vcs   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/vcs)
-		github.com/codegangsta/cli   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/codegangsta/cli)
-	github.com/codegangsta/cli   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/codegangsta/cli)
-	github.com/Masterminds/cookoo   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/cookoo)
-		github.com/Masterminds/cookoo/io   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/cookoo/io)
-	github.com/Masterminds/glide/gb   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/gb)
-	github.com/Masterminds/glide/util   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/util)
-		github.com/Masterminds/vcs   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/vcs)
-	github.com/Masterminds/glide/yaml   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/yaml)
-		github.com/Masterminds/glide/util   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/util)
-			github.com/Masterminds/vcs   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/vcs)
-		github.com/Masterminds/vcs   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/vcs)
-		gopkg.in/yaml.v2   (/Users/mfarina/Code/go/src/gopkg.in/yaml.v2)
-	github.com/Masterminds/semver   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/semver)
-	github.com/Masterminds/vcs   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/Masterminds/vcs)
-	github.com/codegangsta/cli   (/Users/mfarina/Code/go/src/github.com/Masterminds/glide/vendor/github.com/codegangsta/cli)
-```
-
-This shows a tree of imports, excluding core libraries. Because
-vendoring makes it possible for the same package to live in multiple
-places, `glide tree` also prints the location of the package being
-imported.
-
-_This command is deprecated and will be removed in the near future._
-
-### glide list
-
-Glide's `list` command shows an alphabetized list of all the packages
-that a project imports.
-
-```
-$ glide list
-INSTALLED packages:
-	vendor/github.com/Masterminds/cookoo
-	vendor/github.com/Masterminds/cookoo/fmt
-	vendor/github.com/Masterminds/cookoo/io
-	vendor/github.com/Masterminds/cookoo/web
-	vendor/github.com/Masterminds/semver
-	vendor/github.com/Masterminds/vcs
-	vendor/github.com/codegangsta/cli
-	vendor/gopkg.in/yaml.v2
-```
-
-### glide help
-
-Print the glide help.
-
-```
-$ glide help
-```
-
-### glide --version
-
-Print the version and exit.
-
-```
-$ glide --version
-glide version 0.12.0
-```
-
-### glide.yaml
-
-For full details on the `glide.yaml` files see [the documentation](https://glide.sh/docs/glide.yaml).
-
-The `glide.yaml` file does two critical things:
-
-1. It names the current package
-2. It declares external dependencies
-
-A brief `glide.yaml` file looks like this:
-
-```yaml
-package: github.com/Masterminds/glide
-import:
-  - package: github.com/Masterminds/semver
-  - package: github.com/Masterminds/cookoo
-    version: ^1.2.0
-    repo: git@github.com:Masterminds/cookoo.git
-```
-
-The above tells `glide` that...
-
-1. This package is named `github.com/Masterminds/glide`
-2. That this package depends on two libraries.
-
-The first library exemplifies a minimal package import. It merely gives
-the fully qualified import path.
-
-When Glide reads the definition for the second library, it will get the repo
-from the source in `repo`, checkout the latest version between 1.2.0 and 2.0.0,
-and put it in `github.com/Masterminds/cookoo` in the `vendor` directory. (Note
-that `package` and `repo` can be completely different)
-
-**TIP:** The version is either VCS dependent and can be anything that can be checked
-out or a semantic version constraint that can be parsed by the [`github.com/
-Masterminds/semver`](https://github.com/Masterminds/semver) package.
-For example, with Git this can be a branch, tag, or hash. This varies and
-depends on what's supported in the VCS.
-
-**TIP:** In general, you are advised to use the *base package name* for
-importing a package, not a subpackage name. For example, use
-`github.com/kylelemons/go-gypsy` and not
-`github.com/kylelemons/go-gypsy/yaml`.
-
-## Supported Version Control Systems
-
-The Git, SVN, Mercurial (Hg), and Bzr source control systems are supported. This
-happens through the [vcs package](https://github.com/masterminds/vcs).
-
-## Frequently Asked Questions (F.A.Q.)
-
-#### Q: Why does Glide have the concept of sub-packages when Go doesn't?
-
-In Go every directory is a package. This works well when you have one repo
-containing all of your packages. When you have different packages in different
-VCS locations things become a bit more complicated. A project containing a
-collection of packages should be handled with the same information including
-the version. By grouping packages this way we are able to manage the related
-information.
-
-#### Q: bzr (or hg) is not working the way I expected. Why?
-
-These are works in progress, and may need some additional tuning. Please
-take a look at the [vcs package](https://github.com/masterminds/vcs). If you
-see a better way to handle it please let us know.
-
-#### Q: Should I check `vendor/` into version control?
-
-That's up to you. It's not necessary, but it may also cause you extra
-work and lots of extra space in your VCS. There may also be unforeseen errors
-([see an example](https://github.com/mattfarina/golang-broken-vendor)).
-
-#### Q: How do I import settings from GPM, Godep, gom or gb?
-
-There are two parts to importing.
-
-1. If a package you import has configuration for GPM, Godep, gom or gb Glide will
-   recursively install the dependencies automatically.
-2. If you would like to import configuration from GPM, Godep, gom or gb to Glide see
-   the `glide import` command. For example, you can run `glide import godep` for
-   Glide to detect the projects Godep configuration and generate a `glide.yaml`
-   file for you.
-
-Each of these will merge your existing `glide.yaml` file with the
-dependencies it finds for those managers, and then emit the file as
-output. **It will not overwrite your glide.yaml file.**
-
-You can write it to file like this:
-
-```
-$ glide import godep -f glide.yaml
-```
-
-#### Q: Can Glide fetch a package based on OS or Arch?
-
-A: Yes. Using the `os` and `arch` fields on a `package`, you can specify
-which OSes and architectures the package should be fetched for. For
-example, the following package will only be fetched for 64-bit
-Darwin/OSX systems:
-
-```yaml
-- package: some/package
-  os:
-    - darwin
-  arch:
-    - amd64
-```
-
-The package will not be fetched for other architectures or OSes.
-
-## LICENSE
-
-This package is made available under an MIT-style license. See
-LICENSE.txt.
-
-## Thanks!
-
-We owe a huge debt of gratitude to the [GPM and
-GVP](https://github.com/pote/gpm) projects, which
-inspired many of the features of this package. If `glide` isn't the
-right Go project manager for you, check out those.
-
-The Composer (PHP), npm (JavaScript), and Bundler (Ruby) projects all
-inspired various aspects of this tool, as well.
-
-## The Name
-
-Aside from being catchy, "glide" is a contraction of "Go Elide". The
-idea is to compress the tasks that normally take us lots of time into a
-just a few seconds.
+## Added
+
+- #631: Verify version during build in automation (thanks @breerly)
+- #711: Added a commit hash example to the docs (thanks @mh-cbon)
+- #771: Handling default GOPATH for Go 1.8
+- #814: Adding install instructions for Ubuntu 17.04 (thanks @HaraldNordgren)
+- #870: Added support for s390x architecture (thanks @Nayana-ibm)
+
+## Changed
+
+- #582: Removed verbose flag as it was not being used (thanks @kelcecil)
+- #697: Preserve vendor/.git, if it exists. (thanks @sdboyer)
+- #686: Make ending dots in output more consistent (thanks @stevenroose)
+- #748: Updated tests to work windows and add windows CI testing
+- #717: Cache GOROOT at init time for performance (thanks @heyitsanthony)
+- #797, #821, #908: Updating to the latest version of the dependencies
+- #800: Allow VERSION of glide to be passed in with build script (thanks @BlackYoup)
+- #774: Add docs on using go get to install glide (thanks @philoserf)
+- #907: Updated Travis CI language versions of Go to test against (thanks @dvrkps)
+- #916: Update gox to version managed by Masterminds for builds
+
+## Fixed
+
+- #736: Find home dir without using cgo (thanks @krancour)
+- #603: Fixed where, in some cases not importing dependencies config
+- #620: Fixed grammar usage on projects (thanks @server-monitor)
+- #623: Fixed typos in help and  (thanks @jonboulle)
+- #628: Fixed typos (thanks @philoserf)
+- #733: Fixed documentation issues (thanks @matiasanaya)
+- #747: Fixed issue with glide home directory (thanks @agatan)
+- #759: More spelling fixes (thanks @jbirch)
+- #775: Even more doc typo fixes (thanks @cristiangreco)
+- #811: Fixed issue with windows git submodules
+- #819: Fixed more typos (thanks @zoofood)
+- #829: Fixed preservation of .git files correctly (@RaduBerinde)
+- #778: Fixed removing and moving large sets of files fails on Windows
+- #910: Fixed issue due to go/build.ImportDir change response on not found dir
+- #906: Fixed CustomRemoveAll() to handle spaces in paths, and also file not found (thanks @jpz)
+
+# Release 0.12.3 (2016-10-03)
+
+## Fixed
+- #615: Fixed possible situation where resolver could get stuck in a loop
+
+# Release 0.12.2 (2016-09-13)
+
+## Fixed
+- #599: In some cases was not importing dependencies config
+- #601: Fixed issue where --all-dependencies flag stopped working
+
+# Release 0.12.1 (2016-08-31)
+
+## Fixed
+- #578: Not resolving parent project packages in some cases
+- #580: cross-device error handling failed on Windows in some cases
+- #590: When exit signal received remove global lock
+
+Note, Plan 9 is an experimental OS for Go. Due to some issues we are not going
+to be supporting builds for it at this time.
+
+# Release 0.12.0 (2016-08-23)
+
+## Added
+- Support for distributions in FreeBSD, OpenBSD, NetBSD, and Plan9
+- #528: ARM release support (thanks @franciscocpg)
+- #563: Added initial integration testing
+- #533: Log VCS output with debug (`--debug` switch) when there was a VCS error (thanks @atombender)
+- #39: Added support for mirrors. See the mirror command and subcommands
+
+## Changed
+- #521: Sort subpackages for glide.yaml and glide.lock to avoid spurious diffs
+- #487: Skip lookup of subpackage location when parent repo is already known
+  This skips unnecessary network requests (thanks @hori-ryota)
+- #492 and #547: Dependencies are now resolved in a global cache and exported to
+  vendor/ directories. This allows sharing of VCS data between projects without
+  upseting the GOPATH versions and is faster for projects vendoring dependencies.
+  Some flags including --update-vendored, --cache-gopath, --use-gopath, and some
+  others are deprecated and no longer needed.
+
+## Fixed
+- #287: When file or directory not found provide useful message
+- #559: Fixed error is nil issue (thanks @mfycheng)
+- #553: Export was failing with different physical devices
+- #542: Glide failed to detect some test dependencies (thanks @sdboyer)
+- #517: Fixed failure to install testImport from lock when no imports present
+  or when same dependency on both import and testImport
+- #440: Fixed panic in `glide tree` when walking the filesystem (thanks @abhin4v)
+- #529: --delete flag deleted and re-downloaded transitive dependencies
+- #535: Resolve vendor directory symlinks (thanks @Fugiman)
+
+# Release 0.11.1 (2016-07-21)
+
+## Fixed
+- #505: Ignored dependency showing up in testImport
+
+# Release 0.11.0 (2016-07-05)
+
+## Added
+- #461: Resolve test imports
+- #458: Wizard and version detection are now on `glide get`
+- #444: New config wizard helps you find versions and set ranges. Can be run from
+  `glide init` or as separate command
+- #438: Added ability to read symlink basedirs (thanks @klnusbaum)
+- #436: Added .idea to .gitignore
+- #393 and #401: Added a PPA (https://github.com/Masterminds/glide-ppa) and instructions
+  on using it (thanks @franciscocpg)
+- #390: Added support for custom Go executable name. Needed for environments like
+  appengine. Environment variable GLIDE_GO_EXECUTABLE (thanks @dpmcnevin)
+- #382: `glide info` command takes a format string and returns info (thanks @franciscocpg)
+- #365: glide list: support json output format (thanks @chancez)
+
+## Changed
+- Tags are now in the form v[SemVer]. The change is the initial v on the tag.
+  This is to conform with other Go tools that require this.
+- #501: Updating the plugins documentation and adding listing
+- #500: Log an error if stripping version control data fails (thanks @alexbrand)
+- #496: Updated to github.com/Masterminds/semver 1.1.1
+- #495: Updated to github.com/Masterminds/vcs 1.8.0
+- #494: Glide install skips fetch when it is up to date
+- #489: Make shared funcs for lockfile usage (thanks @heewa)
+- #459: When a conflict occurs output the tag, if one exists, for the commit
+- #443: Updating message indentation to be uniform
+- #431: Updated the docs on subpackages
+- #433: The global shared cache was reworked in prep for future uses
+- #396: Don't update the lock file if nothing has changed
+
+## Fixed
+- #460: Sometimes ignored packages were written to lock file. Fixed.
+- #463: Fixed possible nil pointer issues
+- #453: Fix DeleteUnused flag which was not working (thanks @s-urbaniak)
+- #432: Fixed issue with new net/http/httptrace std lib package
+- #392: Correctly normalize Windows package paths (thanks @jrick)
+- #395: Creating the cache key did not handle SCP properly
+- #386: Fixed help text indentation
+- #383: Failed `glide get` had been updating files. No longer does this
+
+And thanks to @derelk, @franciscocpg, @shawnps, @kngu9, @tugberkugurlu, @rhcarvalho,
+@gyuho, and @7imon7ays for documentation updates.
+
+# Release 0.10.2 (2016-04-06)
+
+- Issue #362: Updated docs on how -update-vendored works to help avoid confusion.
+- Fixed #371: Warn when name/location mismatch.
+- Fixed #290: On windows Glide was sometimes pulls in current project (thanks tzneal).
+- Fixed #361: Handle relative imports (thanks tmm1).
+- Fixed #373: Go 1.7 context package import issues.
+
+# Release 0.10.1 (2016-03-25)
+
+- Fixed #354: Fixed a situation where a dependency could be fetched when
+  set to ignore.
+
+# Release 0.10.0 (2016-03-24)
+
+- Issue #293: Added support for importing from Gomfile's (thanks mcuelenaere).
+- Issue #318: Opt-In to strip VCS metadata from vendor directory.
+- Issue #297: Adds exclude property for directories in local codebase to exclude
+  from scanning.
+- Issue #301: Detect version control type from scp style paths (e.g. git@) and
+  from scheme types (e.g., git://).
+- Issue #339: Add ability to remove nested vendor and Godeps workspaces
+  directories. Note, if Godeps rewriting occured it is undone. The Godeps handling
+  is deprecated from day one and will be removed when most Godeps projects have
+  migrated to vendor folder handling.
+- Issue #350: More detailed conflict information (commit metadata displayed).
+- Issue #351: Move to Gitter for chat.
+- Issue #352: Make Glide installable. The dependencies are checked into the
+  `vendor` folder.
+
+# Release 0.9.3 (2016-03-09)
+
+- Fixed #324: Glide tries to update ignored package
+
+# Release 0.9.2 (2016-03-08)
+
+- Fixed issue on #317: Some windows calls had the improper path separator.
+- Issue #315: Track updated packages to avoid duplicated work (in part by
+  thockin, thanks).
+- Fixed #312: Don't double-print SetVersion() failure (thanks thockin).
+- Fixed #311: Don't process deps if 'get' was a non-operation (thanks thockin).
+- Issue #307: Moving 'already set' to a debug message to cleanup output
+  (thanks thockin).
+- Fixed #306: Don't call SetVersion twice. There was a place where it was called
+  twice in a logical row (thanks thockin).
+- Fixed #304: Glide tries to update ignored packages.
+- Fixed #302: Force update can cause a panic.
+
+# Release 0.9.1 (2016-02-24)
+
+- Fixed #272: Handling appengine special package case.
+- Fixed #273: Handle multiple packages in the same directory but handling
+  build tags used in those packages.
+- Added documentation explaining how import resolution works.
+- Fixed #275 and #285: Empty directories as package locations reporting errors.
+  Improved the UX and handle the errors.
+- Fixed #279: Added Go 1.7 support that no longer has GO15VENDOREXPERIMENT.
+- Issue #267: Added `os` and `arch` import properties to the documentation.
+- Fixed #267: Glide was only walking the import tree based on build flags for
+  the current OS and Arch. This is a problem for systems like docker that have
+  variation built in.
+
+# Release 0.9.0 (2016-02-17)
+
+- Fixed #262: Using correct query string merging for go-get queries (thanks gdm85).
+- Fixed #251: Fixed warning message (thanks james-lawrence).
+- Adding support for IBM JazzHub.
+- Fixes #250: When unable to retrieve or set version on a dependency now erroring
+  and exiting with non-0 exit code.
+- Issue #218: Added `glide rm` command.
+- Fixed #215: Under some error conditions the package resolver could get into
+  an infinite loop.
+- Issue #234: Adding more options to the glide.yaml file including license,
+  owners, homepage, etc. See the docs for more detail.
+- Issue #237: Added Read The Docs support and initial docs. http://glide.readthedocs.org
+- Issue #248: Uses go env to get value of GO15VENDOREXPERIMENT due to 1.6 enabling
+  by default.
+- Issue #240: Glide only scans used imports rather than all paths in the tree.
+  The previous behavior is available via a flag.
+- Fixed #235: Glide on windows writing incorrect slashes to files.
+- Fixed #227: Fixed ensure when multiple gopaths.
+- Refactored Glide
+  - Many features broken out into packages. All but `action/` can be
+    used as libraries.
+  - Cookoo is not used anymore
+  - The `action/` package replaces `cmd/`
+
+# Release 0.8.3 (2015-12-30)
+
+- Issue #198: Instead of stopping `glide install` for a hash failures providing
+  a warning. Failed hash check is currently too aggressive.
+- Fixed #199: `glide up` on Windows unable to detect dependencies when GOPATH
+  and GOROOT on a different drive or when GOROOT ends in a path separator.
+- Fixed #194: `glide up` stalling on Windows due to POSIX path separators and
+  path list separators being used.
+- Fixed #185 and #187: Inaccurate hash being generated for lock file with nested
+  version ranges.
+- Fixed #182 and #183: Caching on go-import lookups mishandled some prefixes.
+- Fixed issue in deduping and sub-package names.
+- Fixed #189: nested dependencies that do not contain VCS information were not
+  being updated properly when --updated-vendored was being used.
+- Fixed #186: glide up PACKAGE was failing to generate a proper glide.lock file.
+
+# Release 0.8.2 (2015-12-21)
+
+- Fixed #169: cookoo git url has auth info. Makes glide unbuildable for
+  environments not setup for GitHub.
+- Fixed #180: the hash in the glide.lock file was not being properly calculated.
+- Fixed #174: glide get was causing an error when the flag --updated-vendored
+  was being used.
+- Fixed #175: glide get when the GOPATH isn't setup properly could end up in
+  an infinite loop.
+
+# Release 0.8.1 (2015-12-15)
+
+- Fixed #163: Was detecting std lib packages when the GOROOT was different at
+  runtime than compile time.
+- Fixed #165: glide update panics with --no-recursive option.
+- Added back zip build option to build scripts. This is useful for some
+  environments.
+
+# Release 0.8.0 (2015-12-10)
+
+- Issues #156 and #85: Added lockfile support (glide.lock). This file records
+  commit id pinned versions of the entire dependency tree. The `glide install`
+  command installs the pinned dependencies from the `glide.lock` file while
+  `glide update` updates the tree and lockfile. Most people should use `glide
+  install` unless they want to intentionally updated the pinned dependencies.
+  `glide install` is able to use concurrency to more quickly install update.
+- Issues #33 and #159: Glide notifies if a dependency checkout has uncomitted
+  changes.
+- Issue #146: Glide scans projects not managed by a dependency manager, fetches
+  their dependencies, and pins them in the glide.lock file.
+- Issue #99: Glide `get` pins dependencies by default and allows a version to
+  be passed in. For example, `glide get github.com/Masterminds/convert#^1.0.0`
+  will fetch `github.com/Masterminds/convert` with a version of `^1.0.0`.
+- Issue #155: Copying packages from the `GOPATH` is now opt-in.
+
+# Release 0.7.2 (2015-11-16)
+
+- Fixed #139: glide.yaml file imports being reordered when file written.
+- Fixed #140: packages in glide.yaml were no longer being deduped.
+
+# Release 0.7.1 (2015-11-10)
+
+- Fixed #136: Fixed infinite recursion in list and tree commands.
+- Fixed issue where glide guess listed a null parent.
+- Fixed #135: Hard failure when home directory not found for cache.
+- Fixed #137: Some messages not ending in "\n".
+- Fixed #132 and #133: Build from source directions incorrect (thanks hyPiRion).
+
+# Release 0.7.0 (2015-11-02)
+
+- Fixed #110: Distribution as .tag.gz instead of .zip.
+- Issue #126: Added --no-color option to remove color for systems that do not
+  work well with color codes (thanks albrow).
+- Added caching functionality (some opt-in).
+- Added global debug flag.
+- Moved yaml parsing and writing to gopkg.in/yaml.v2 and separated
+  config handling into separate package.
+- Better godep import handling.
+- Fixed #98: Godep command name fix (thanks jonboulle).
+- #52 and #114: Add semantic version (SemVer) support.
+- #108: Flatten the dependency tree by default.
+- Fixed #107: Allow `glide get` to retrieve insecure packages with `--insecure`
+  flag.
+- #105: Import commands accept a filename with the `-f` flag.
+- Fixed #97: Fixed misspellings (thanks jonboulle).
+- #96: Allow multiple packages in `glide get`.
+- #92: Added support to `glide update` to only update a specific package.
+- #91: `glide list` now displays if a pkg is in vendor, GOPATH, or missing.
+- Issue #89: More robust GOPATH handling (thanks gcmt).
+- Fixed #65: Hg commands were not checking out the codebase on the first update.
+- Fixed #95: Added more detail for errors previously reporting "Oops! exit
+  status 128".
+- Fixed #86 and #71: Imported package names including a sub-package were checked
+  out to the wrong location. They are not checked out to the right place and
+  multiple instances of the top level repo are merged with error checking.
+
+# Release 0.6.1 (2015-09-21)
+
+- Fixed #82: C was not recognized as an internal package.
+- Fixed #84: novendor (nv) command returned directories with no Go code.
+
+# Release 0.6.0 (2015-09-16)
+
+- #53: Add support for gb-vendor manifest files.
+- Added `glide tree` command to inspect the code and see the imported packages.
+- Added `glide list` to see an alphabetized list of imported projects.
+- Added flatten feature to flatten the vendor tree (thanks interlock).
+- Fixed #74: Glide guess using the wrong GOROOT locations in some environments
+  (thanks janeczku).
+- Fixed #76: Glide tree doesn't exclude core libraries with the GOROOT is
+  incorrect (thanks janeczku).
+- Fixed #81: rebuild command did not look in vendor/ directory
+- Fixed #77: update failed when a commit id was set for the ref
+
+# Release 0.5.1 (2015-08-31)
+
+- Fixed #58: Guess command not working.
+- Fixed #56: Unable to use glide get on golang.org/x/[name]/[subpackage]
+- Fixed #61: The wrong version of a dependency can be pinned when packages are
+  vendored (no VCS repo associated with them).
+- Fixed #67: Unable to work go-get redirects.
+- Fixed #66: 'glide up' now has an --update-vendored (-u) flag to update
+  vendored directories.
+- Fixed #68: Handling the base where the GOPATH has multiple separated directories.
+
+# Release 0.5.0 (2015-08-19)
+
+**Glide .5 is a major update breaking some backwards compatability with
+previous releases.**
+
+- Migrated to using the vendor/ directory and the go tools for vendor
+  package management. To leverage this you'll need to set the
+  environment variable GO15VENDOREXPERIMENT=1 and use Go 1.5.
+- `glide up` is now recursive and walks installed packages if there is
+  no vendor directory. Use the --no-recursive flag to skip this.
+- Removed GOPATH management. This was needed for vendor package
+  management that's not built into the go toolchain.
+- Switched to github.com/Masterminds/vcs for VCS integration.
+- When updating packages are now deleted if the --delete flag is set.
+  This feature is now opt-in.
+- Fixed #32: Detects VCS type and endpoint changes along with a --force flag
+  to replace the checkout if desired.
+
+# Release 0.4.1 (2015-07-13)
+
+- Issue #48: When GOPATH not _vendor directory not deleting unused packages.
+
+# Release 0.4.0 (2015-07-07)
+
+- Issue #34: Delete unused packages on update unless flag set.
+- Added 'glide create PACKAGE'
+- Added 'glide exec COMMAND'
+- Added 'glide get PACKAGE'
+- Added 'glide pin FILENAME'
+- Added 'glide guess FILENAME'
+- Updated help text
+
+# Release 0.3.0 (2015-06-17)
+
+- Issue #46: If VCS type is set use that rather than go get.
+- Issue #45: Added git fastpath if configured ref or tag matches current
+  one. (via roblillack)
+- Issue #30: Added support for changed VCS type to a git repo. (thanks roblillack)
+- Issue #42: Fixed update for new dependencies where repo not configured.
+  (thanks roblillack)
+- Issue #25: Added GOOS and GOARCH support.
+- Issue #35: Updated documentation on what update from existing repos means
+- Issue #37: Added support to import from GPM and Godep
+- Issue #36: Added example for shell (bash/zsh) prompt to show the current
+  GOPATH. (thanks eAndrius)
+- Issue #31: The local Go bin should be higher precedence in the
+  system's PATH (via jarod).
+- Issue #28: Use HTTPS instead of HTTP for git and hg. (Thanks chendo)
+- Issue #26: 'glide gopath' is smarter. It now looks for glide.yaml.
+- Issue #24: Trim whitespace off of package names. (Thanks roblillack)
+
+# Release 0.2.0 (2014-10-03)
+
+- Issue #15, #18: `glide guess` can guess dependencies for an existing
+  repo. (HUGE thanks to dz0ny)
+- Issue #14: Glide fails now when YAML is invalid.
+- Issue #13: cli.go added to Makefile (via roblillack)
+- Issue #12: InitGlide takes YAML file now
+- Issue #9: Fixed handling of $SHELL (Thanks roblillack)
+- Issue #10: Symbolic link uses a relative path now (Thanks roblillack)
+- Issue #5: Build step is deferred when 'go get' is used to fetch
+  packages. (Thanks gsalgado)
+- Issue #11: Add GOBIN to glide environment (via dz0ny)
+- Typos fixed (#17 by lamielle, #16 by roblillack)
+- Moved the CLI handling to cli.go (github.com/codegangsta/cli)
